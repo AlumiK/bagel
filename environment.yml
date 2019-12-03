@@ -1,0 +1,9 @@
+name: bagel
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - scikit-learn
+  - pandas
+  - pytorch
+  - cpuonly

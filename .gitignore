@@ -1,2 +1,13 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
-.DS_Store
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Jetbrains IDE
+.idea/
+
+# Sample outputs and models
+sample/out/
