@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='bagel-pytorch',
-    version='1.0.0',
+    version='1.1.0',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
     license='MIT',
@@ -18,7 +18,7 @@ setuptools.setup(
     install_requires=[
         'pandas',
         'scikit-learn',
-        'torch==1.7.0+cpu',
+        'torch',
     ],
     dependency_links=[
         'https://download.pytorch.org/whl/torch_stable.html',

@@ -1,7 +1,7 @@
 # Bagel
 
 ![python-3.6-3.7-3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![version-1.0.0](https://img.shields.io/badge/version-1.0.0-blue)
+![version-1.1.0](https://img.shields.io/badge/version-1.1.0-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-pytorch/blob/main/LICENSE)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
@@ -10,7 +10,7 @@ Bagel is a robust and unsupervised KPI anomaly detection algorithm based on cond
 
 This is an implementation of Bagel in the latest PyTorch. The original PyTorch 0.4 implementation can be found here: [NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
 
-A better implementation of Bagel in TensorFlow 2 can be found at [AlumiK/bagel-tensorflow](https://github.com/AlumiK/bagel-tensorflow), which supports save/load models and GPU acceleration.
+A better implementation of Bagel in TensorFlow 2 can be found at [AlumiK/bagel-tensorflow](https://github.com/AlumiK/bagel-tensorflow), which supports save/load models and better performance.
 
 ## Dependencies
 
