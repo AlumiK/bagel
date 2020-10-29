@@ -14,8 +14,7 @@ def filename(file: str) -> str:
 
 def mkdirs(*dir_list):
     for directory in dir_list:
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
+        os.makedirs(directory, exist_ok=True)
 
 
 def file_list(path: str) -> Sequence:
@@ -27,10 +26,9 @@ def file_list(path: str) -> Sequence:
 
 def load_kpi(file: str, **kwargs) -> bagel.data.KPI:
     df = pd.read_csv(file, **kwargs)
-    labels = df.label if 'label' in df.keys() else None
     return bagel.data.KPI(timestamps=df.timestamp,
                           values=df.value,
-                          labels=labels,
+                          labels=df.get('label', None),
                           name=bagel.utils.filename(file))
 
 
