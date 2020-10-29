@@ -4,6 +4,7 @@ import numpy as np
 
 from typing import Sequence, Dict, Optional
 from torch.utils.data import DataLoader
+from torch.backends import cudnn
 
 
 class AutoencoderLayer(torch.nn.Module):
@@ -63,6 +64,7 @@ class Bagel:
                  latent_dim: int = 8,
                  dropout_rate: float = 0.1,
                  device: Optional[str] = None):
+        cudnn.benchmark = True
         if device is None:
             self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
         else:
