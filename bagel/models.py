@@ -145,7 +145,6 @@ class Bagel:
 
         optimizer = torch.optim.Adam(self._model.parameters(), lr=1e-3, weight_decay=1e-3)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)
-        self._model.train()
 
         for epoch in range(epochs):
             epoch_losses = []
@@ -158,7 +157,7 @@ class Bagel:
                     target=len(dataset) + (0 if validation_kpi is None else len(validation_dataset)),
                     interval=0.5
                 )
-
+            self._model.train()
             for batch in dataset:
                 optimizer.zero_grad()
                 x, y, normal = batch
@@ -176,6 +175,7 @@ class Bagel:
 
             if validation_kpi is not None:
                 with torch.no_grad():
+                    self._model.eval()
                     for batch in validation_dataset:
                         x, y, normal = batch
                         q_zx, p_xz, z = self._model([x, y])
@@ -202,7 +202,6 @@ class Bagel:
         return history
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256, verbose: int = 1) -> np.ndarray:
-        self._model.eval()
         print('Testing Epoch')
         kpi = kpi.no_labels()
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size)
@@ -212,6 +211,7 @@ class Bagel:
             progbar = bagel.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         with torch.no_grad():
+            self._model.eval()
             for batch in dataset:
                 x, y, normal = batch
                 x = self._missing_imputation(x, y, normal)
@@ -223,3 +223,9 @@ class Bagel:
                     progbar.add(1, values=[('test_loss', test_loss.cpu().numpy())])
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
+
+    def save(self, path: str):
+        torch.save(self._model.state_dict(), path)
+
+    def load(self, path: str):
+        self._model.load_state_dict(torch.load(path))
