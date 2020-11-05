@@ -180,6 +180,6 @@ class KPIDataset:
         return np.asarray(self._normal, dtype=np.float32)
 
     def to_torch(self, device: str) -> TensorDataset:
-        return TensorDataset(torch.Tensor(self.values).to(device),
-                             torch.Tensor(self.time_code).to(device),
-                             torch.Tensor(self.normal).to(device))
+        return TensorDataset(torch.as_tensor(self.values).to(device),
+                             torch.as_tensor(self.time_code).to(device),
+                             torch.as_tensor(self.normal).to(device))

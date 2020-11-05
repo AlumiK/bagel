@@ -172,7 +172,7 @@ class Bagel:
                 epoch_losses.append(loss)
                 if verbose == 2:
                     progbar.add(1, values=[('loss', loss.detach().cpu().numpy())])
-            epoch_loss = torch.mean(torch.Tensor(epoch_losses)).numpy()
+            epoch_loss = torch.mean(torch.as_tensor(epoch_losses)).numpy()
             losses.append(epoch_loss)
 
             if validation_kpi is not None:
@@ -185,7 +185,7 @@ class Bagel:
                         epoch_val_losses.append(val_loss)
                         if verbose == 2:
                             progbar.add(1, values=[('val_loss', val_loss.cpu().numpy())])
-                epoch_val_loss = torch.mean(torch.Tensor(epoch_val_losses)).numpy()
+                epoch_val_loss = torch.mean(torch.as_tensor(epoch_val_losses)).numpy()
                 val_losses.append(epoch_val_loss)
 
             if verbose == 1:
