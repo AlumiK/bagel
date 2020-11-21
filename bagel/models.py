@@ -140,7 +140,7 @@ class Bagel:
         history = {}
         progbar = None
         if verbose == 1:
-            print('Training Epoch')
+            print('Training Epochs')
             progbar = bagel.utils.Progbar(epochs,
                                           interval=0.5,
                                           stateful_metrics=['loss', 'val_loss'],
@@ -202,12 +202,12 @@ class Bagel:
         return history
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256, verbose: int = 1) -> np.ndarray:
-        print('Testing Epoch')
         kpi = kpi.no_labels()
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size)
         dataset = DataLoader(dataset.to_torch(self._device), batch_size=batch_size)
         progbar = None
         if verbose == 1:
+            print('Testing Epoch')
             progbar = bagel.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         with torch.no_grad():
