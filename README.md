@@ -8,48 +8,42 @@
 
 Bagel is a robust and unsupervised KPI anomaly detection algorithm based on conditional variational autoencoder.
 
-This is an implementation of Bagel in the latest PyTorch. The original PyTorch 0.4 implementation can be found here: [NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
+This is an implementation of Bagel in the latest PyTorch. The original PyTorch 0.4 implementation can be found at [NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
 
-A better implementation of Bagel in TensorFlow 2 can be found at [AlumiK/bagel-tensorflow](https://github.com/AlumiK/bagel-tensorflow), which has better performance.
+A better implementation of Bagel in TensorFlow 2 can be found at [AlumiK/bagel-tensorflow](https://github.com/AlumiK/bagel-tensorflow), which has much better performance.
 
-## Dependencies
-
-- Python >=3.6, <3.9
-- Pytorch
+## Install
 
 Normally, `pip` will automatically install required PyPI dependencies when you install this package:
- 
-```
-pip install -e .
-``` 
 
-An `environment.yml` is also provided if you want to use `conda` to manage dependencies:
+- For development use:
+ 
+    ```
+    git clone https://github.com/AlumiK/bagel-pytorch.git
+    cd bagel-pytorch
+    pip install -e .[dev]
+    ```
+
+- For production use:
+
+    ```
+    pip install git+https://github.com/AlumiK/bagel-pytorch.git
+    ```
+
+An `environment.yml` is also provided if you prefer `conda` to manage dependencies:
 
 ```
 conda env create -f environment.yml
 ```
 
-### Notes
-
-`sample/plot_kpi.py` requires `matplotlib`. You can manually install it by `pip install matplotlib`.
-
 ## Run
-
-### Sample Script
-
-A sample script can be found at `sample/main.py`:
-
-```
-cd sample
-python main.py
-```
 
 ### KPI Format
 
 KPI data must be stored in csv files in the following format:
 
 ```
-timestamp,  value,        label
+timestamp,   value,       label
 1469376000,  0.847300274, 0
 1469376300, -0.036137314, 0
 1469376600,  0.074292384, 0
@@ -62,6 +56,16 @@ timestamp,  value,        label
 
 - `timestamp`: timestamps in seconds (10-digit).
 - `label`: `0` for normal points, `1` for anomaly points.
+- Labels are used for evaluation and are not required in the production environment. 
+
+### Sample Script
+
+A sample script can be found at `sample/main.py`:
+
+```
+cd sample
+python main.py
+```
 
 ## Usage
 
@@ -70,7 +74,7 @@ To prepare the data:
 ```python
 import bagel
 
-kpi = bagel.utils.load_kpi(file_path)
+kpi = bagel.utils.load_kpi('kpi_data.csv')
 kpi.complete_timestamp()
 train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
 train_kpi, mean, std = train_kpi.standardize()
@@ -78,7 +82,7 @@ valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
 test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
 ```
 
-To construct a Donut model, train the model, and use the trained model for prediction:
+To construct a Bagel model, train the model, and use the trained model for prediction:
 
 ```python
 import bagel
@@ -91,10 +95,10 @@ anomaly_scores = model.predict(test_kpi)
 To save and restore a trained model:
 
 ```python
-# Save a trained model
+# To save a trained model
 model.save(path)
 
-# Load a pre-trained model
+# To load a pre-trained model
 import bagel
 model = bagel.Bagel()
 model.load(path)
