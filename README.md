@@ -83,7 +83,7 @@ To construct a Donut model, train the model, and use the trained model for predi
 ```python
 import bagel
 
-model = bagel.models.Bagel()
+model = bagel.Bagel()
 model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=EPOCHS)
 anomaly_scores = model.predict(test_kpi)
 ```
@@ -96,7 +96,7 @@ model.save(path)
 
 # Load a pre-trained model
 import bagel
-model = bagel.models.Bagel()
+model = bagel.Bagel()
 model.load(path)
 ```
 
