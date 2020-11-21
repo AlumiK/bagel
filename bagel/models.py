@@ -60,7 +60,7 @@ class Bagel:
 
     def __init__(self,
                  window_size: int = 120,
-                 hidden_dims: Optional[Sequence] = None,
+                 hidden_dims: Sequence = (100, 100),
                  latent_dim: int = 8,
                  learning_rate: float = 1e-3,
                  dropout_rate: float = 0.1,
@@ -71,27 +71,25 @@ class Bagel:
         else:
             self._device = device
 
-        self._hidden_dims = [100, 100] if hidden_dims is None else hidden_dims
-        self._latent_dim = latent_dim
         self._window_size = window_size
         self._cond_size = 60 + 24 + 7
         self._dropout_rate = dropout_rate
         self._model = ConditionalVariationalAutoencoder(
             encoder=AutoencoderLayer(
                 input_dim=self._window_size + self._cond_size,
-                output_dim=self._latent_dim,
-                hidden_dims=self._hidden_dims
+                output_dim=latent_dim,
+                hidden_dims=hidden_dims
             ),
             decoder=AutoencoderLayer(
-                input_dim=self._latent_dim + self._cond_size,
+                input_dim=latent_dim + self._cond_size,
                 output_dim=self._window_size,
-                hidden_dims=self._hidden_dims
+                hidden_dims=list(reversed(hidden_dims))
             ),
             device=self._device
         ).to(self._device)
         self._p_z = torch.distributions.Normal(
-            torch.zeros(self._latent_dim).to(self._device),
-            torch.ones(self._latent_dim).to(self._device)
+            torch.zeros(latent_dim).to(self._device),
+            torch.ones(latent_dim).to(self._device)
         )
         self._optimizer = torch.optim.Adam(self._model.parameters(), lr=learning_rate, weight_decay=1e-3)
         self._lr_scheduler = torch.optim.lr_scheduler.StepLR(self._optimizer, step_size=10, gamma=0.75)
