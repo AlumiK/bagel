@@ -62,6 +62,7 @@ class Bagel:
                  window_size: int = 120,
                  hidden_dims: Optional[Sequence] = None,
                  latent_dim: int = 8,
+                 learning_rate: float = 1e-3,
                  dropout_rate: float = 0.1,
                  device: Optional[str] = None):
         cudnn.benchmark = True
@@ -92,6 +93,8 @@ class Bagel:
             torch.zeros(self._latent_dim).to(self._device),
             torch.ones(self._latent_dim).to(self._device)
         )
+        self._optimizer = torch.optim.Adam(self._model.parameters(), lr=learning_rate, weight_decay=1e-3)
+        self._lr_scheduler = torch.optim.lr_scheduler.StepLR(self._optimizer, step_size=10, gamma=0.75)
 
     @staticmethod
     def _m_elbo(x: torch.Tensor,
@@ -145,9 +148,6 @@ class Bagel:
                                           stateful_metrics=['loss', 'val_loss'],
                                           unit_name='epoch')
 
-        optimizer = torch.optim.Adam(self._model.parameters(), lr=1e-3, weight_decay=1e-3)
-        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)
-
         for epoch in range(epochs):
             epoch_losses = []
             epoch_val_losses = []
@@ -161,14 +161,14 @@ class Bagel:
                 )
             self._model.train()
             for batch in dataset:
-                optimizer.zero_grad()
+                self._optimizer.zero_grad()
                 x, y, normal = batch
                 y = torch.nn.Dropout(self._dropout_rate)(y)
                 q_zx, p_xz, z = self._model([x, y])
                 loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self._model.parameters(), max_norm=10.)
-                optimizer.step()
+                self._optimizer.step()
                 epoch_losses.append(loss)
                 if verbose == 2:
                     progbar.add(1, values=[('loss', loss.detach().cpu().numpy())])
@@ -196,7 +196,7 @@ class Bagel:
                     values.append(('val_loss', epoch_val_loss))
                 progbar.add(1, values=values)
 
-            lr_scheduler.step()
+            self._lr_scheduler.step()
 
         history['loss'] = losses
         if len(val_losses) > 0:
