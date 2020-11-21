@@ -2,7 +2,7 @@ import torch
 import bagel
 import numpy as np
 
-from typing import Sequence, Dict, Optional
+from typing import Sequence, Tuple, Dict, Optional
 from torch.utils.data import DataLoader
 from torch.backends import cudnn
 
@@ -120,6 +120,27 @@ class Bagel:
                 x[normal == 0.] = p_xz.sample()[0][normal == 0.]
         return x
 
+    def _train_step(self, x: torch.Tensor, y: torch.Tensor, normal: torch.Tensor) -> torch.Tensor:
+        self._optimizer.zero_grad()
+        y = torch.nn.Dropout(self._dropout_rate)(y)
+        q_zx, p_xz, z = self._model([x, y])
+        loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self._model.parameters(), max_norm=10.)
+        self._optimizer.step()
+        return loss
+
+    def _validation_step(self, x: torch.Tensor, y: torch.Tensor, normal: torch.Tensor) -> torch.Tensor:
+        q_zx, p_xz, z = self._model([x, y])
+        return -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
+
+    def _test_step(self, x: torch.Tensor, y: torch.Tensor, normal: torch.Tensor) -> Tuple[torch.Tensor, np.ndarray]:
+        x = self._missing_imputation(x, y, normal)
+        q_zx, p_xz, z = self._model([x, y], n_samples=128)
+        test_loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
+        log_p_xz = p_xz.log_prob(x)
+        return test_loss, log_p_xz
+
     def fit(self,
             kpi: bagel.data.KPI,
             epochs: int,
@@ -159,14 +180,7 @@ class Bagel:
                 )
             self._model.train()
             for batch in dataset:
-                self._optimizer.zero_grad()
-                x, y, normal = batch
-                y = torch.nn.Dropout(self._dropout_rate)(y)
-                q_zx, p_xz, z = self._model([x, y])
-                loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self._model.parameters(), max_norm=10.)
-                self._optimizer.step()
+                loss = self._train_step(*batch)
                 epoch_losses.append(loss)
                 if verbose == 2:
                     progbar.add(1, values=[('loss', loss.detach().cpu().numpy())])
@@ -177,9 +191,7 @@ class Bagel:
                 with torch.no_grad():
                     self._model.eval()
                     for batch in validation_dataset:
-                        x, y, normal = batch
-                        q_zx, p_xz, z = self._model([x, y])
-                        val_loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
+                        val_loss = self._validation_step(*batch)
                         epoch_val_losses.append(val_loss)
                         if verbose == 2:
                             progbar.add(1, values=[('val_loss', val_loss.cpu().numpy())])
@@ -213,11 +225,7 @@ class Bagel:
         with torch.no_grad():
             self._model.eval()
             for batch in dataset:
-                x, y, normal = batch
-                x = self._missing_imputation(x, y, normal)
-                q_zx, p_xz, z = self._model([x, y], n_samples=128)
-                test_loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
-                log_p_xz = p_xz.log_prob(x)
+                test_loss, log_p_xz = self._test_step(*batch)
                 anomaly_scores.extend(-torch.mean(log_p_xz[:, :, -1], dim=0))
                 if verbose == 1:
                     progbar.add(1, values=[('test_loss', test_loss.cpu().numpy())])
