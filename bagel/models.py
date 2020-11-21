@@ -72,17 +72,17 @@ class Bagel:
             self._device = device
 
         self._window_size = window_size
-        self._cond_size = 60 + 24 + 7
         self._dropout_rate = dropout_rate
+        cond_size = 60 + 24 + 7
         self._model = ConditionalVariationalAutoencoder(
             encoder=AutoencoderLayer(
-                input_dim=self._window_size + self._cond_size,
+                input_dim=window_size + cond_size,
                 output_dim=latent_dim,
                 hidden_dims=hidden_dims
             ),
             decoder=AutoencoderLayer(
-                input_dim=latent_dim + self._cond_size,
-                output_dim=self._window_size,
+                input_dim=latent_dim + cond_size,
+                output_dim=window_size,
                 hidden_dims=list(reversed(hidden_dims))
             ),
             device=self._device
