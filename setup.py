@@ -20,6 +20,11 @@ setuptools.setup(
         'scikit-learn',
         'torch',
     ],
+    extras_require={
+        'dev': [
+            'matplotlib',
+        ],
+    },
     dependency_links=[
         'https://download.pytorch.org/whl/torch_stable.html',
     ],
