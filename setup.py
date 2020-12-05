@@ -4,7 +4,7 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='bagel-pytorch',
+    name='bagel-torch',
     version='1.3.0',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
@@ -12,7 +12,7 @@ setuptools.setup(
     description='Implementation of Bagel in PyTorch',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/AlumiK/bagel-pytorch',
+    url='https://github.com/AlumiK/bagel-torch',
     packages=setuptools.find_packages(include=['bagel', 'bagel.*']),
     platforms='any',
     install_requires=[
